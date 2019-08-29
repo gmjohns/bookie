@@ -1,27 +1,24 @@
-from ohmysportsfeedspy import API_v1_2
+from apisetup.v2_1 import API_v2_1
 
 
 ### Main class for all interaction with the MySportsFeeds API
 class MySportsFeeds(object):
 
     # Constructor
-    def __init__(self, version='1.2', verbose=False, store_type=None, store_location=None):
-        self.__verify_version(version)
-        self.__verify_store(store_type, store_location)
-
+    def __init__(self, version='2.1', verbose=False, store_type=None, store_location=None):
         self.version = version
         self.verbose = verbose
-        self.store_type = store_type
-        self.store_location = store_location
+        self.store_type = None
+        self.store_location = None
 
         # Instantiate an instance of the appropriate API depending on version
-        if self.version == '1.2':
-            self.api_instance = API_v1_2(self.verbose, self.store_type, self.store_location)
+        if self.version == '2.1':
+            self.api_instance = API_v2_1(self.verbose, self.store_type, self.store_location)
 
     # Make sure the version is supported
     def __verify_version(self, version):
-        if version != '1.2':
-            raise ValueError("Unrecognized version specified.  Supported versions are: '1.2'")
+        if version != '2.1':
+            raise ValueError("Unrecognized version specified.  Supported versions are: '2.1'")
 
     # Verify the type and location of the stored data
     def __verify_store(self, store_type, store_location):
