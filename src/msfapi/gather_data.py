@@ -1,4 +1,5 @@
 import numpy as np
+from timetools import TimeTools
 from getrawdata import GetRawData
 
     
@@ -6,35 +7,59 @@ class GetStats:
 
     raw = GetRawData()
     
-    def get_ids(self, season):
-        ids = np.array([])
+    def get_game(self, season):
+        games = {}
         # api call to get json formatted list of all games 
-        games = self.raw.get_games(season)
+        season_games = self.raw.get_games(season)
 
-        for game in games['games']:
-            ids = np.append(ids, game['schedule']['id'])
+        for game in season_games['games']:
+            id = game['schedule']['id']
+            date = game['schedule']['startTime']
+            game[id] = TimeTools.format_data(date)
         
-        return ids
+        print(games)
+        return games
 
-    def get_game_stats(self, season, id):
-        glu = self.raw.get_lineup(season, id)
+    def get_game_stats(self, season, game):
+        glu = self.raw.get_lineup(season, game)
         home_team = glu['game']['homeTeam']['abbreviation']
         away_team = glu['game']['awayTeam']['abbreviation']
         
         for team in glu['teamLineups']:
             if team['team']['abbreviation'] == home_team:
-                home_lineup = team['actual']
+                home_lineup = team['expected']
             if team['team']['abbreviation'] == away_team:
-                away_lineup = team['actual']
+                away_lineup = team['expected']
         
+        for player in home_lineup['lineupPositions']:
+            if player['position'] == 'P':
+                home_pitcher = player['player']['firstName']
+                home_pitcher += '-'
+                home_pitcher += player['player']['lastName']
+                home_pitcher += '-'
+                home_pitcher += str(player['player']['id'])
         
-
-
+        for player in away_lineup['lineupPositions']:
+            if player['position'] == 'P':
+                away_pitcher = player['player']['firstName']
+                away_pitcher += '-'
+                away_pitcher += player['player']['lastName']
+                away_pitcher += '-'
+                away_pitcher += str(player['player']['id'])
+        
+        return [home_pitcher, away_pitcher]
     
+    def get_current_era(self, season, game, pitcher):
+        sps = self.raw.get_season_player(season, game, pitcher)
+        print(sps)
+
 if __name__ == "__main__":
     stats = GetStats()
     season = '2017-regular'
-    ids = stats.get_ids(season)
+    games = stats.get_game(season)
     
-    for id in ids[:1]:
-        stats.get_game_stats(season, int(id))
+    for game_id in games:
+        pitchers = stats.get_game_stats(season, int(game_id))
+        for pitcher in pitchers:
+            stats.get_current_era(season, games[game_id], pitcher)
+
