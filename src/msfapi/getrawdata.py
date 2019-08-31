@@ -16,4 +16,4 @@ class GetRawData:
         return self.msf.msf_get_data(league='mlb',season=season_year,feed='game_boxscore',game=game_id,format='json')
 
     def get_season_player(self, season_year, player_id, date_curr):
-        return self.msf.msf_get_data(eague='mlb',season=season_year,feed='seasonal_player_stats',player=player_id,date=date_curr,format='json')
+        return self.msf.msf_get_data(league='mlb',season=season_year,feed='seasonal_player_stats',player=player_id,date=date_curr,format='json')

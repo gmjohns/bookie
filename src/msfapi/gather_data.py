@@ -15,8 +15,7 @@ class GetStats:
         for game in season_games['games']:
             id = game['schedule']['id']
             date = game['schedule']['startTime']
-            game[id] = timetools.format_date(date)
-            print(game[id])
+            games[id] = timetools.format_date(date)
         
         return games
 
@@ -49,17 +48,18 @@ class GetStats:
         
         return [home_pitcher, away_pitcher]
     
-    def get_current_era(self, season, game, pitcher):
-        sps = self.raw.get_season_player(season, game, pitcher)
+    def get_current_era(self, season, pitcher, date):
+        print(season, pitcher, date)
+        sps = self.raw.get_season_player(season, pitcher, date)
         print(sps)
 
 if __name__ == "__main__":
     stats = GetStats()
     season = '2017-regular'
     games = stats.get_game(season)
-    
     for game_id in games:
         pitchers = stats.get_game_stats(season, int(game_id))
         for pitcher in pitchers:
-            stats.get_current_era(season, games[game_id], pitcher)
+            stats.get_current_era(season, pitcher, games[game_id])
+
 
