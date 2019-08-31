@@ -1,5 +1,5 @@
 import numpy as np
-from timetools import TimeTools
+import timetools
 from getrawdata import GetRawData
 
     
@@ -15,9 +15,9 @@ class GetStats:
         for game in season_games['games']:
             id = game['schedule']['id']
             date = game['schedule']['startTime']
-            game[id] = TimeTools.format_data(date)
+            game[id] = timetools.format_date(date)
+            print(game[id])
         
-        print(games)
         return games
 
     def get_game_stats(self, season, game):
