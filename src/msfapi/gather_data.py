@@ -49,9 +49,11 @@ class GetStats:
         return [home_pitcher, away_pitcher]
     
     def get_current_era(self, season, pitcher, date):
-        print(season, pitcher, date)
         sps = self.raw.get_season_player(season, pitcher, date)
-        print(sps)
+        for stats in sps['playerStatsTotals']:
+            era = stats['stats']['pitching']['earnedRunAvg']
+            print(era)
+
 
 if __name__ == "__main__":
     stats = GetStats()
