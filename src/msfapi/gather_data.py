@@ -48,11 +48,18 @@ class GetStats:
         
         return [home_pitcher, away_pitcher]
     
-    def get_current_era(self, season, pitcher, date):
+    def get_pitcher_stats(self, season, pitcher, date):
+        pitcher_stats = {}
         sps = self.raw.get_season_player(season, pitcher, date)
+        last_season = self.raw.get_season_player('2016-regular', pitcher, '20160930')
         for stats in sps['playerStatsTotals']:
-            era = stats['stats']['pitching']['earnedRunAvg']
-            print(era)
+            pitcher_stats['era'] = stats['stats']['pitching']['earnedRunAvg']
+            pitcher_stats['total_innings'] = stats['stats']['pitching']['inningsPitched']
+        for stats in last_season['playerStatsTotals']:
+            pitcher_stats['last_era'] = stats['stats']['pitching']['earnedRunAvg']
+            pitcher_stats['last_total_innings'] = stats['stats']['pitching']['inningsPitched']
+
+        return pitcher_stats
 
 
 if __name__ == "__main__":
@@ -62,6 +69,7 @@ if __name__ == "__main__":
     for game_id in games:
         pitchers = stats.get_game_stats(season, int(game_id))
         for pitcher in pitchers:
-            stats.get_current_era(season, pitcher, games[game_id])
+            pitcher_stats = stats.get_pitcher_stats(season, pitcher, games[game_id])
+            print(pitcher_stats)
 
 
