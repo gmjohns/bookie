@@ -51,7 +51,8 @@ class GetStats:
     def get_pitcher_stats(self, season, pitcher, date):
         pitcher_stats = {}
         sps = self.raw.get_season_player(season, pitcher, date)
-        last_season = self.raw.get_season_player('2016-regular', pitcher, '20160930')
+        prev_season = timetools.get_previous_season_end(season)
+        last_season = self.raw.get_season_player(prev_season[1], pitcher, prev_season[0])
         for stats in sps['playerStatsTotals']:
             pitcher_stats['era'] = stats['stats']['pitching']['earnedRunAvg']
             pitcher_stats['total_innings'] = stats['stats']['pitching']['inningsPitched']
@@ -61,6 +62,11 @@ class GetStats:
 
         return pitcher_stats
 
+    def get_batting_lineup(self, season, game):
+        away_lineup = {}
+        home_lineup = []
+
+        return {'home': home_lineup, 'away': away_lineup}
 
 if __name__ == "__main__":
     stats = GetStats()
@@ -71,5 +77,4 @@ if __name__ == "__main__":
         for pitcher in pitchers:
             pitcher_stats = stats.get_pitcher_stats(season, pitcher, games[game_id])
             print(pitcher_stats)
-
-
+        batters = stats.get_batting_lineup(season, game_id)
