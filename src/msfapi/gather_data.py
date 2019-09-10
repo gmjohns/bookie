@@ -21,6 +21,8 @@ class GetStats:
 
     def get_game_stats(self, season, game):
         glu = self.raw.get_lineup(season, game)
+        print(glu)
+        lineup = {}
         home_team = glu['game']['homeTeam']['abbreviation']
         away_team = glu['game']['awayTeam']['abbreviation']
         
@@ -37,6 +39,8 @@ class GetStats:
                 home_pitcher += player['player']['lastName']
                 home_pitcher += '-'
                 home_pitcher += str(player['player']['id'])
+                lineup['home_pitcher'] = home_pitcher
+            # if player['position'] == ''
         
         for player in away_lineup['lineupPositions']:
             if player['position'] == 'P':
@@ -45,8 +49,9 @@ class GetStats:
                 away_pitcher += player['player']['lastName']
                 away_pitcher += '-'
                 away_pitcher += str(player['player']['id'])
-        
-        return [home_pitcher, away_pitcher]
+                lineup['away_pitcher'] = away_pitcher
+            
+        return lineup
     
     def get_pitcher_stats(self, season, pitcher, date):
         pitcher_stats = {}
@@ -62,12 +67,6 @@ class GetStats:
 
         return pitcher_stats
 
-    def get_batting_lineup(self, season, game):
-        away_lineup = {}
-        home_lineup = []
-
-        return {'home': home_lineup, 'away': away_lineup}
-
 if __name__ == "__main__":
     stats = GetStats()
     season = '2017-regular'
@@ -77,4 +76,4 @@ if __name__ == "__main__":
         for pitcher in pitchers:
             pitcher_stats = stats.get_pitcher_stats(season, pitcher, games[game_id])
             print(pitcher_stats)
-        batters = stats.get_batting_lineup(season, game_id)
+        batters = stats.get_batting_lineup(season, game_id, 5)
