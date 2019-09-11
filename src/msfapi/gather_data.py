@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import timetools
 from getrawdata import GetRawData
 
@@ -8,15 +9,14 @@ class GetStats:
     raw = GetRawData()
     
     def get_game(self, season):
-        games = {}
+        games = pd.DataFrame(columns=['id', 'date'])
         # api call to get json formatted list of all games 
         season_games = self.raw.get_games(season)
 
         for game in season_games['games']:
             id = game['schedule']['id']
-            date = game['schedule']['startTime']
-            games[id] = timetools.format_date(date)
-            
+            date = timetools.format_date(game['schedule']['startTime'])
+            games = games.append({'date': date, 'id': id}, ignore_index=True)
         
         return games
 
@@ -56,35 +56,38 @@ class GetStats:
     def get_pitcher_stats(self, season, pitcher, date):
         pitcher_stats = {}
         sps = self.raw.get_season_player(season, pitcher, date)
-        prev_season = timetools.get_previous_season_end(season)
-        last_season = self.raw.get_season_player(prev_season[1], pitcher, prev_season[0])
         for stats in sps['playerStatsTotals']:
             pitcher_stats['era'] = stats['stats']['pitching']['earnedRunAvg']
             pitcher_stats['total_innings'] = stats['stats']['pitching']['inningsPitched']
-        for stats in last_season['playerStatsTotals']:
-            pitcher_stats['last_era'] = stats['stats']['pitching']['earnedRunAvg']
-            pitcher_stats['last_total_innings'] = stats['stats']['pitching']['inningsPitched']
 
         return pitcher_stats
 
     def get_team_stats(self, team, season, date):
         team = self.raw.get_team_stats(team, season, date)
-        prev_season = timetools.get_previous_season_end(season)
-        last_season = self.raw.get_team_stats(team, prev_season[1], prev_season[0])
         for stats in team['teamStatsTotals']:
             at_bats = stats['stats']['batting']['atBats']
         return at_bats
 
-if __name__ == "__main__":
+def main():
     stats = GetStats()
     season = '2017-regular'
+    # get previous season name and last day of previous season
+    # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
+    prev_season = timetools.get_previous_season_end(season)
     games = stats.get_game(season)
-    for game_id in games:
-        lineup = stats.get_game_stats(season, int(game_id))
-        # get home and away pitcher statistics
-        home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], games[game_id])
-        away_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], games[game_id])
 
+    for idx, game in games.iterrows():
+        lineup = stats.get_game_stats(season, game['id'])
+        # get home and away pitcher statistics
+        home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['date'])
+        away_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['date'])
+        ls_home_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['home_pitcher'], prev_season[0])
+        ls_away_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['away_pitcher'], prev_season[0])
         # get home and away team statistics
-        home_team_stats = stats.get_team_stats(lineup['home_team'], season, games[game_id])
-        print(home_team_stats)
+        home_team_stats = stats.get_team_stats(lineup['home_team'], season, game['date'])
+        away_team_stats = stats.get_team_stats(lineup['away_team'], season, game['date'])
+        ls_home_team_stats = stats.get_team_stats(lineup['home_team'], prev_season[1], prev_season[0])
+        ls_away_team_stats = stats.get_team_stats(lineup['away_team'], prev_season[1], prev_season[0])
+
+if __name__ == "__main__":
+    main()
