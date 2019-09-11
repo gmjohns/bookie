@@ -16,16 +16,17 @@ class GetStats:
             id = game['schedule']['id']
             date = game['schedule']['startTime']
             games[id] = timetools.format_date(date)
+            
         
         return games
 
     def get_game_stats(self, season, game):
         glu = self.raw.get_lineup(season, game)
-        print(glu)
         lineup = {}
         home_team = glu['game']['homeTeam']['abbreviation']
         away_team = glu['game']['awayTeam']['abbreviation']
-        
+        lineup['home_team'] = home_team
+        lineup['away_team'] = away_team
         for team in glu['teamLineups']:
             if team['team']['abbreviation'] == home_team:
                 home_lineup = team['expected']
@@ -40,7 +41,6 @@ class GetStats:
                 home_pitcher += '-'
                 home_pitcher += str(player['player']['id'])
                 lineup['home_pitcher'] = home_pitcher
-            # if player['position'] == ''
         
         for player in away_lineup['lineupPositions']:
             if player['position'] == 'P':
@@ -67,13 +67,24 @@ class GetStats:
 
         return pitcher_stats
 
+    def get_team_stats(self, team, season, date):
+        team = self.raw.get_team_stats(team, season, date)
+        prev_season = timetools.get_previous_season_end(season)
+        last_season = self.raw.get_team_stats(team, prev_season[1], prev_season[0])
+        for stats in team['teamStatsTotals']:
+            at_bats = stats['stats']['batting']['atBats']
+        return at_bats
+
 if __name__ == "__main__":
     stats = GetStats()
     season = '2017-regular'
     games = stats.get_game(season)
     for game_id in games:
-        pitchers = stats.get_game_stats(season, int(game_id))
-        for pitcher in pitchers:
-            pitcher_stats = stats.get_pitcher_stats(season, pitcher, games[game_id])
-            print(pitcher_stats)
-        batters = stats.get_batting_lineup(season, game_id, 5)
+        lineup = stats.get_game_stats(season, int(game_id))
+        # get home and away pitcher statistics
+        home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], games[game_id])
+        away_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], games[game_id])
+
+        # get home and away team statistics
+        home_team_stats = stats.get_team_stats(lineup['home_team'], season, games[game_id])
+        print(home_team_stats)
