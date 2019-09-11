@@ -57,16 +57,20 @@ class GetStats:
         pitcher_stats = {}
         sps = self.raw.get_season_player(season, pitcher, date)
         for stats in sps['playerStatsTotals']:
-            pitcher_stats['era'] = stats['stats']['pitching']['earnedRunAvg']
-            pitcher_stats['total_innings'] = stats['stats']['pitching']['inningsPitched']
+            pitcher_stats['ERA'] = stats['stats']['pitching']['earnedRunAvg']
+            pitcher_stats['IP'] = stats['stats']['pitching']['inningsPitched']
 
         return pitcher_stats
 
     def get_team_stats(self, team, season, date):
+        team_stats = {}
         team = self.raw.get_team_stats(team, season, date)
         for stats in team['teamStatsTotals']:
-            at_bats = stats['stats']['batting']['atBats']
-        return at_bats
+            team_stats['AB'] = stats['stats']['batting']['atBats']
+            team_stats['HR'] = stats['stats']['batting']['homeruns']
+            team_stats['WP'] = stats['stats']['standings']['winPct']
+
+        return team_stats
 
 def main():
     stats = GetStats()
@@ -75,8 +79,30 @@ def main():
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
     prev_season = timetools.get_previous_season_end(season)
     games = stats.get_game(season)
-
-    for idx, game in games.iterrows():
+    stat_list = [
+        'home_pitcher_curr_era', 
+        'home_pitcher_prev_era', 
+        'home_pitcher_curr_ip', 
+        'home_pitcher_prev_ip', 
+        'away_pitcher_curr_era', 
+        'away_pitcher_prev_era', 
+        'away_pitcher_curr_ip', 
+        'away_pitcher_prev_ip', 
+        'home_team_curr_win_pct',
+        'home_team_prev_win_pct',
+        'home_team_curr_fir',
+        'home_team_prev_fir', 
+        'home_team_curr_hr',
+        'home_team_prev_hr',
+        'away_team_curr_win_pct',
+        'away_team_prev_win_pct',
+        'away_team_curr_fir',
+        'away_team_prev_fir',
+        'away_team_curr_hr',
+        'away_team_prev_hr'
+        ]
+    games_data = pd.DataFrame(columns=stat_list)
+    for idx, game in games.head(5).iterrows():
         lineup = stats.get_game_stats(season, game['id'])
         # get home and away pitcher statistics
         home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['date'])
@@ -88,6 +114,26 @@ def main():
         away_team_stats = stats.get_team_stats(lineup['away_team'], season, game['date'])
         ls_home_team_stats = stats.get_team_stats(lineup['home_team'], prev_season[1], prev_season[0])
         ls_away_team_stats = stats.get_team_stats(lineup['away_team'], prev_season[1], prev_season[0])
+
+        games_data = games_data.append({
+        'home_pitcher_curr_era': home_pitcher_stats['ERA'], 
+        'home_pitcher_prev_era': ls_home_pitcher_stats['ERA'],
+        'home_pitcher_curr_ip': home_pitcher_stats['IP'], 
+        'home_pitcher_prev_ip': ls_home_pitcher_stats['IP'],
+        'away_pitcher_curr_era': away_pitcher_stats['ERA'], 
+        'away_pitcher_prev_era': ls_away_pitcher_stats['ERA'],
+        'away_pitcher_curr_ip': away_pitcher_stats['IP'],
+        'away_pitcher_prev_ip': ls_away_pitcher_stats['IP'],
+        'home_team_curr_win_pct': home_team_stats['WP'],
+        'home_team_prev_win_pct': ls_home_team_stats['WP'],
+        'home_team_curr_hr': home_team_stats['HR'],
+        'home_team_prev_hr': ls_home_team_stats['HR'],
+        'away_team_curr_win_pct': away_team_stats['WP'],
+        'away_team_prev_win_pct': ls_away_team_stats['WP'],
+        'away_team_curr_hr': away_team_stats['HR'],
+        'away_team_prev_hr': ls_away_team_stats['HR']
+        }, ignore_index=True)
+    games_data.to_csv(season + '.csv', sep=',', index=False)
 
 if __name__ == "__main__":
     main()
