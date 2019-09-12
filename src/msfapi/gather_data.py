@@ -9,14 +9,15 @@ class GetStats:
     raw = GetRawData()
     
     def get_game(self, season):
-        games = pd.DataFrame(columns=['id', 'date'])
+        games = pd.DataFrame(columns=['id', 'date', 'prev_day'])
         # api call to get json formatted list of all games 
         season_games = self.raw.get_games(season)
 
         for game in season_games['games']:
             id = game['schedule']['id']
             date = timetools.format_date(game['schedule']['startTime'])
-            games = games.append({'date': date, 'id': id}, ignore_index=True)
+            prev = timetools.get_previous_day(game['schedule']['startTime'])
+            games = games.append({'date': date, 'id': id, 'prev_day': prev}, ignore_index=True)
         
         return games
 
@@ -72,6 +73,10 @@ class GetStats:
 
         return team_stats
 
+    def get_team_fir(self, team, season, date):
+        fir = 0
+        sg = self.raw.get_season_games(team, season, date)
+
 def main():
     stats = GetStats()
     season = '2017-regular'
@@ -102,16 +107,16 @@ def main():
         'away_team_prev_hr'
         ]
     games_data = pd.DataFrame(columns=stat_list)
-    for idx, game in games.head(5).iterrows():
+    for idx, game in games.head(10).iterrows():
         lineup = stats.get_game_stats(season, game['id'])
         # get home and away pitcher statistics
-        home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['date'])
-        away_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['date'])
+        home_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['prev_day'])
+        away_pitcher_stats = stats.get_pitcher_stats(season, lineup['home_pitcher'], game['prev_day'])
         ls_home_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['home_pitcher'], prev_season[0])
         ls_away_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['away_pitcher'], prev_season[0])
         # get home and away team statistics
-        home_team_stats = stats.get_team_stats(lineup['home_team'], season, game['date'])
-        away_team_stats = stats.get_team_stats(lineup['away_team'], season, game['date'])
+        home_team_stats = stats.get_team_stats(lineup['home_team'], season, game['prev_day'])
+        away_team_stats = stats.get_team_stats(lineup['away_team'], season, game['prev_day'])
         ls_home_team_stats = stats.get_team_stats(lineup['home_team'], prev_season[1], prev_season[0])
         ls_away_team_stats = stats.get_team_stats(lineup['away_team'], prev_season[1], prev_season[0])
 
@@ -133,6 +138,7 @@ def main():
         'away_team_curr_hr': away_team_stats['HR'],
         'away_team_prev_hr': ls_away_team_stats['HR']
         }, ignore_index=True)
+        stats.get_team_fir(lineup['home_team'], season, game['prev_day'])
     games_data.to_csv(season + '.csv', sep=',', index=False)
 
 if __name__ == "__main__":
