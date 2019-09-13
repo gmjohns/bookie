@@ -24,16 +24,13 @@ class GetStats:
         for game in season_games['games']:
             start_time = game['schedule']['startTime']
             id = game['schedule']['id']
-            date = timetools.format_date(start_time)
+            date = timetools.format_datetime(start_time)
             # check if previous day falls within season range
             if timetools.prev_in_range(start_time, season['start'], season['end']):
                 prev = timetools.get_previous_day(start_time)
             else:
                 prev = None
             games = games.append({'date': date, 'id': id, 'prev_day': prev}, ignore_index=True)   
-            print('prev:', prev)
-            print('date:', date)
-            print('starttime:', start_time)      
         return games
 
     def get_game_stats(self, season, game):
@@ -97,8 +94,8 @@ def main():
     season = stats.get_season('20170701')
     # get previous season name and last day of previous season
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
-    prev_season = timetools.get_previous_season_end(season['title'])
-    print(season)
+    prev_season = stats.get_season('20160701')
+    prev_end_date = timetools.format_date(prev_season['end'])
     games = stats.get_game(season)
     stat_list = [
         'home_pitcher_curr_era', 
@@ -128,13 +125,13 @@ def main():
         # get home and away pitcher statistics
         home_pitcher_stats = stats.get_pitcher_stats(season['title'], lineup['home_pitcher'], game['prev_day'])
         away_pitcher_stats = stats.get_pitcher_stats(season['title'], lineup['home_pitcher'], game['prev_day'])
-        ls_home_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['home_pitcher'], prev_season[0])
-        ls_away_pitcher_stats = stats.get_pitcher_stats(prev_season[1], lineup['away_pitcher'], prev_season[0])
+        ls_home_pitcher_stats = stats.get_pitcher_stats(prev_season['title'], lineup['home_pitcher'], prev_end_date)
+        ls_away_pitcher_stats = stats.get_pitcher_stats(prev_season['title'], lineup['away_pitcher'], prev_end_date)
         # get home and away team statistics
         home_team_stats = stats.get_team_stats(lineup['home_team'], season['title'], game['prev_day'])
         away_team_stats = stats.get_team_stats(lineup['away_team'], season['title'], game['prev_day'])
-        ls_home_team_stats = stats.get_team_stats(lineup['home_team'], prev_season[1], prev_season[0])
-        ls_away_team_stats = stats.get_team_stats(lineup['away_team'], prev_season[1], prev_season[0])
+        ls_home_team_stats = stats.get_team_stats(lineup['home_team'], prev_season['title'], prev_end_date)
+        ls_away_team_stats = stats.get_team_stats(lineup['away_team'], prev_season['title'], prev_end_date)
         # get first inning runs
         stats.get_team_fir(lineup['home_team'], season['title'], game['prev_day'])
         
