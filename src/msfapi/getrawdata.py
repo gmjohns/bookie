@@ -23,3 +23,6 @@ class GetRawData:
 
     def get_season_games(self, team_id, season_year, date_curr):
         return self.msf.msf_get_data(league='mlb',season=season_year,feed='seasonal_games',team=team_id,date=date_curr,format='json')
+
+    def get_current_season(self, date_curr):
+        return self.msf.msf_get_data(league='mlb',feed='current_season',date=date_curr,format='json')

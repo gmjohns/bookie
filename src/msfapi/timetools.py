@@ -22,4 +22,12 @@ def get_previous_day(input_date):
     tz_east = pytz.timezone('America/New_York')
     utc = datetime.strptime(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     east = utc.astimezone(tz_east)
-    return str(east.date() - timedelta(-1)).replace('-', '')
+    return str(east.date() - timedelta(days=1)).replace('-', '')
+
+def prev_in_range(input_date, start, end):
+    tz_east = pytz.timezone('America/New_York')
+    start = datetime.strptime(start, '%Y-%m-%dZ').isoformat()
+    end = datetime.strptime(end, '%Y-%m-%dZ')
+    utc = datetime.strptime(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+    prev_date = utc.astimezone(tz_east) - timedelta(days=1)
+    return start < prev_date < end
