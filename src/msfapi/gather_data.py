@@ -41,65 +41,85 @@ class GetStats:
         away_team = glu['game']['awayTeam']['abbreviation']
         lineup['home_team'] = home_team
         lineup['away_team'] = away_team
-        for team in glu['teamLineups']:
-            if team['team']['abbreviation'] == home_team:
-                home_lineup = team['actual']
-            if team['team']['abbreviation'] == away_team:
-                away_lineup = team['actual']
         
-        for player in home_lineup['lineupPositions']:
-            if player['position'] == 'P':
-                # remove all non-character values from string
-                home_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                home_pitcher += '-'
-                home_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
-                lineup['home_pitcher'] = home_pitcher
-        
-        for player in away_lineup['lineupPositions']:
-            if player['position'] == 'P':
-                away_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                away_pitcher += '-'
-                away_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
-                lineup['away_pitcher'] = away_pitcher       
+        try:
+            for team in glu['teamLineups']:
+                if team['team']['abbreviation'] == home_team:
+                    home_lineup = team['actual']
+                if team['team']['abbreviation'] == away_team:
+                    away_lineup = team['actual']
+
+            for player in home_lineup['lineupPositions']:
+                if player['position'] == 'P':
+                    # remove all non-character values from string
+                    home_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
+                    home_pitcher += '-'
+                    home_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                    lineup['home_pitcher'] = home_pitcher
+            
+            for player in away_lineup['lineupPositions']:
+                if player['position'] == 'P':
+                    away_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
+                    away_pitcher += '-'
+                    away_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                    lineup['away_pitcher'] = away_pitcher   
+        except:
+            lineup['home_pitcher'] = 'NA'
+            lineup['away_pitcher'] = 'NA'
+
         return lineup
     
     def get_pitcher_stats(self, season, pitcher, date=None):
         pitcher_stats = {'ERA': 0, 'IP': 0}
-        if date != 'NA':      
-            sps = self.raw.get_season_player(season, pitcher, date)
-            for stats in sps['playerStatsTotals']:
-                # should add check of player-id here
-                pitcher_stats['ERA'] = stats['stats']['pitching']['earnedRunAvg']
-                pitcher_stats['IP'] = stats['stats']['pitching']['inningsPitched']
+        try:
+            if date != 'NA':      
+                sps = self.raw.get_season_player(season, pitcher, date)
+                for stats in sps['playerStatsTotals']:
+                    # should add check of player-id here
+                    pitcher_stats['ERA'] = stats['stats']['pitching']['earnedRunAvg']
+                    pitcher_stats['IP'] = stats['stats']['pitching']['inningsPitched']
+        except:
+            pitcher_stats['ERA'] = -1
+            pitcher_stats['IP'] = -1
+            
         return pitcher_stats
 
     def get_team_stats(self, team, season, date=None):
-        team_stats = {'AB': 0, 'SLG': 0, 'WP': 0}
-        if date != 'NA':
-            team = self.raw.get_team_stats(team, season, date)
-            for stats in team['teamStatsTotals']:
-                team_stats['AB'] = stats['stats']['batting']['atBats']
-                team_stats['SLG'] = stats['stats']['batting']['batterSluggingPct']
-                team_stats['WP'] = stats['stats']['standings']['winPct']
+        team_stats = {'AB': 0, 'SLG': 0, 'WP': 0.5}
+        try:
+            if date != 'NA':
+                team = self.raw.get_team_stats(team, season, date)
+                for stats in team['teamStatsTotals']:
+                    team_stats['AB'] = stats['stats']['batting']['atBats']
+                    team_stats['SLG'] = stats['stats']['batting']['batterSluggingPct']
+                    team_stats['WP'] = stats['stats']['standings']['winPct']
+        except:
+            team_stats['AB'] = -1
+            team_stats['SLG'] = -1
+            team_stats['WP'] = -1
+
         return team_stats
 
     def get_team_fir(self, team, season, date=None):
         fir = []
-        count = 1
-        if date != 'NA':
-            if date is not None:
-                date = 'until-' + date
-            sg = self.raw.get_games(season, team, date)
-            for count, game in enumerate(sg['games']):
-                if game['schedule']['awayTeam']['abbreviation'] == team:
-                    status = 'away'
-                else:
-                    status = 'home'
-                for inning in game['score']['innings']:
-                    if inning['inningNumber'] == 1:
-                        score = inning[status + 'Score']
-                        fir.append(score)
-        return sum(fir)/count
+        count = 0
+        try:
+            if date != 'NA':
+                if date is not None:
+                    date = 'until-' + date
+                sg = self.raw.get_games(season, team, date)
+                for count, game in enumerate(sg['games']):
+                    if game['schedule']['awayTeam']['abbreviation'] == team:
+                        status = 'away'
+                    else:
+                        status = 'home'
+                    for inning in game['score']['innings']:
+                        if inning['inningNumber'] == 1:
+                            score = inning[status + 'Score']
+                            fir.append(score)
+        except:
+            return -1
+        return sum(fir)/(count+1)
 
 
 def main():
@@ -108,6 +128,8 @@ def main():
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
     prev_season = stats.get_season('20160701')
     prev_end_date = timetools.format_date(prev_season['end'])
+    default_era = 6.00
+    inn_min = 15
     games = stats.get_game(season)
     stat_list = [
         'date',
@@ -135,7 +157,7 @@ def main():
         'away_team_prev_slg'
         ]
     games_data = pd.DataFrame(columns=stat_list)
-    for idx, game in games.head(10).iterrows():
+    for idx, game in games.iterrows():
         print(idx)
         lineup = stats.get_game_stats(season['title'], game['id'])
         print(lineup)
@@ -144,6 +166,14 @@ def main():
         away_pitcher_stats = stats.get_pitcher_stats(season['title'], lineup['home_pitcher'], game['prev_day'])
         ls_home_pitcher_stats = stats.get_pitcher_stats(prev_season['title'], lineup['home_pitcher'])
         ls_away_pitcher_stats = stats.get_pitcher_stats(prev_season['title'], lineup['away_pitcher'])
+        if 0 <= ls_home_pitcher_stats['IP'] < inn_min:
+            ls_home_pitcher_stats['ERA'] = default_era
+        if 0 <= ls_away_pitcher_stats['IP'] < inn_min:
+            ls_away_pitcher_stats['ERA'] = default_era
+        if 0 <= home_pitcher_stats['IP'] < inn_min:
+            home_pitcher_stats['ERA'] = ls_home_pitcher_stats['ERA']
+        if 0 <= away_pitcher_stats['IP'] < inn_min:
+            away_pitcher_stats['ERA'] = ls_away_pitcher_stats['ERA']
         # get home and away team statistics
         home_team_stats = stats.get_team_stats(lineup['home_team'], season['title'], game['prev_day'])
         away_team_stats = stats.get_team_stats(lineup['away_team'], season['title'], game['prev_day'])
@@ -154,7 +184,7 @@ def main():
         away_team_fir = stats.get_team_fir(lineup['away_team'], season['title'], game['prev_day'])
         ls_home_team_fir = stats.get_team_fir(lineup['home_team'], prev_season['title'])
         ls_away_team_fir = stats.get_team_fir(lineup['away_team'], prev_season['title'])
-        
+
         games_data = games_data.append({
             'date': game['date'],
             'home_team': lineup['home_team'],
@@ -182,7 +212,7 @@ def main():
         }, ignore_index=True)
         if idx % 20 == 0 and idx != 0:
             time.sleep(80)
-    games_data.to_csv(season['title'] + '.csv', sep=',', index=False)
+    games_data.to_csv(season['title'] + 'Raw.csv', sep=',', index=False)
 
 if __name__ == "__main__":
     main()
