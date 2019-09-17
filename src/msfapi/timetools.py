@@ -17,15 +17,15 @@ def format_date(input_date):
     east = convert_utc_to_est(input_date, '%Y-%m-%dZ')
     return str(east.date()).replace('-', '')
 
-def get_previous_day(input_date):
-    east = convert_utc_to_est(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-    prev_east = east - timedelta(days=1)
-    return str(prev_east.date()).replace('-', '')
+def get_previous_day(gameday):
+    gameday = datetime.strptime(gameday, '%Y%m%d')
+    prev_day = gameday - timedelta(days=1)
+    return str(prev_day.date()).replace('-', '')
 
-def prev_in_range(input_date, start, end):
-    from_zone = tz.gettz('UTC')
-    start = datetime.strptime(start, '%Y-%m-%dZ').astimezone(from_zone)
-    end = datetime.strptime(end, '%Y-%m-%dZ').astimezone(from_zone)
-    east = convert_utc_to_est(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-    prev_date = east - timedelta(days=1)
-    return start < prev_date < end
+def prev_in_range(gameday, start, end):
+    gameday = datetime.strptime(gameday, '%Y%m%d')
+    prev_day = gameday - timedelta(days=1)
+    start = datetime.strptime(start, '%Y-%m-%dZ')
+    end = datetime.strptime(end, '%Y-%m-%dZ')
+    print(prev_day, start, end)
+    return start <= prev_day <= end

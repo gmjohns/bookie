@@ -15,11 +15,14 @@ class GetRawData:
     def get_boxscore(self, season_year, game_id):
         return self.msf.msf_get_data(league='mlb',season=season_year,feed='game_boxscore',game=game_id,format='json')
 
-    def get_season_player(self, season_year, player_id, date_curr):
-        return self.msf.msf_get_data(league='mlb',season=season_year,feed='seasonal_player_stats',player=player_id,date=date_curr,format='json')
+    def get_season_player(self, season_year, player_list, date_curr):
+        return self.msf.msf_get_data(league='mlb',season=season_year,feed='seasonal_player_stats',player=player_list,date=date_curr,format='json')
 
     def get_team_stats(self, team_id, season_year, date_curr):
         return self.msf.msf_get_data(league='mlb',season=season_year,feed='seasonal_team_stats',team=team_id,date=date_curr,format='json')
 
     def get_current_season(self, date_curr):
         return self.msf.msf_get_data(league='mlb',feed='current_season',date=date_curr,format='json')
+
+    def get_daily_games(self, season_year, date_curr):
+        return self.msf.msf_get_data(league='mlb', feed='daily_games',season=season_year,date=date_curr,format='json')
