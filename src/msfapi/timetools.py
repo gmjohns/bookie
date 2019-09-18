@@ -27,5 +27,4 @@ def prev_in_range(gameday, start, end):
     prev_day = gameday - timedelta(days=1)
     start = datetime.strptime(start, '%Y-%m-%dZ')
     end = datetime.strptime(end, '%Y-%m-%dZ')
-    print(prev_day, start, end)
     return start <= prev_day <= end
