@@ -183,7 +183,6 @@ class API_v2_1(API_v1_0):
         elif feed == "seasonal_player_stats":
             if season == "":
                 raise AssertionError("You must specify a season for this request.")
-
             return "{base_url}/{league}/{season}/player_stats_totals.{output}".format(base_url=self.base_url, league=league, season=season, output=output_format)
 
         elif feed == "seasonal_venues":
