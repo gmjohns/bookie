@@ -22,16 +22,20 @@ class GetStats:
         return season_stats
 
     def get_game(self, season):
-        games = pd.DataFrame(columns=['date', 'id'])
+        games = pd.DataFrame(columns=['date', 'id', 'fir_label'])
         # api call to get json formatted list of all games 
         season_games = self.raw.get_games(season['title'])
-
         for game in season_games['games']:
             start_time = game['schedule']['startTime']
             id = game['schedule']['id']
             date = timetools.format_datetime(start_time)
+            first_inning = game['score']['innings'][0]
+            if first_inning['awayScore'] + first_inning['homeScore'] >= 1:
+                fir_label = 1
+            else:
+                fir_label = 0
             # check if previous day falls within season range
-            games = games.append({'date': date, 'id': id}, ignore_index=True)   
+            games = games.append({'date': date, 'id': id, 'fir_label': fir_label}, ignore_index=True)   
         return games
 
     def get_game_stats(self, season, game):
@@ -79,9 +83,11 @@ class GetStats:
                     pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
                     pitcher += '-'
                     pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
-                    game_id = lineups[pitcher]['game_id']
-                    data[game_id][lineups[pitcher]['title']]['ERA'] = player['stats']['pitching']['earnedRunAvg']
-                    data[game_id][lineups[pitcher]['title']]['IP'] = player['stats']['pitching']['inningsPitched']
+                    
+                    for idx in range(len(lineups[pitcher]['game_id'])):
+                        game_id = lineups[pitcher]['game_id'][idx]
+                        data[game_id][lineups[pitcher]['title'][idx]]['ERA'] = player['stats']['pitching']['earnedRunAvg']
+                        data[game_id][lineups[pitcher]['title'][idx]]['IP'] = player['stats']['pitching']['inningsPitched']
                 except:
                     continue
 
@@ -94,9 +100,11 @@ class GetStats:
                 pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
                 pitcher += '-'
                 pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
-                game_id = lineups[pitcher]['game_id']
-                data[game_id][lineups[pitcher]['title']]['prev_ERA'] = player['stats']['pitching']['earnedRunAvg']
-                data[game_id][lineups[pitcher]['title']]['prev_IP'] = player['stats']['pitching']['inningsPitched']
+
+                for idx in range(len(lineups[pitcher]['game_id'])):
+                    game_id = lineups[pitcher]['game_id'][idx]
+                    data[game_id][lineups[pitcher]['title'][idx]]['prev_ERA'] = player['stats']['pitching']['earnedRunAvg']
+                    data[game_id][lineups[pitcher]['title'][idx]]['prev_IP'] = player['stats']['pitching']['inningsPitched']
             except:
                 continue
 
@@ -108,10 +116,12 @@ class GetStats:
             for team in team['teamStatsTotals']:
                 try:
                     team_abr = team['team']['abbreviation']
-                    game_id = lineups[team_abr]['game_id']
-                    data[game_id][lineups[team_abr]['title']]['AB'] = team['stats']['batting']['atBats']
-                    data[game_id][lineups[team_abr]['title']]['SLG'] = team['stats']['batting']['batterSluggingPct']
-                    data[game_id][lineups[team_abr]['title']]['WP'] = team['stats']['standings']['winPct']
+
+                    for idx in range(len(lineups[team_abr]['game_id'])):
+                        game_id = lineups[team_abr]['game_id'][idx]
+                        data[game_id][lineups[team_abr]['title'][idx]]['AB'] = team['stats']['batting']['atBats']
+                        data[game_id][lineups[team_abr]['title'][idx]]['SLG'] = team['stats']['batting']['batterSluggingPct']
+                        data[game_id][lineups[team_abr]['title'][idx]]['WP'] = team['stats']['standings']['winPct']
                 except:
                     continue
 
@@ -121,9 +131,10 @@ class GetStats:
         for team in prev['teamStatsTotals']:
             try:
                 team_abr = team['team']['abbreviation']
-                game_id = lineups[team_abr]['game_id']
-                data[game_id][lineups[team_abr]['title']]['prev_SLG'] = team['stats']['batting']['batterSluggingPct']
-                data[game_id][lineups[team_abr]['title']]['prev_WP'] = team['stats']['standings']['winPct']
+                for idx in range(len(lineups[team_abr]['game_id'])):
+                    game_id = lineups[team_abr]['game_id'][idx]
+                    data[game_id][lineups[team_abr]['title'][idx]]['prev_SLG'] = team['stats']['batting']['batterSluggingPct']
+                    data[game_id][lineups[team_abr]['title'][idx]]['prev_WP'] = team['stats']['standings']['winPct']
             except:
                 continue
 
@@ -148,9 +159,10 @@ class GetStats:
                 except:
                     continue
             for team in teams:
-                game_id = lineups[team]['game_id']
                 try:
-                    data[game_id][lineups[team]['title']]['FIR'] = sum(fir[team]) / len(fir[team])
+                    for idx in range(len(lineups[team]['game_id'])):
+                        game_id = lineups[team]['game_id'][idx]
+                        data[game_id][lineups[team]['title'][idx]]['FIR'] = sum(fir[team]) / len(fir[team])
                 except:
                     continue
 
@@ -174,9 +186,10 @@ class GetStats:
                 continue
 
         for team in teams:
-            game_id = lineups[team]['game_id']
             try:
-                data[game_id][lineups[team]['title']]['prev_FIR'] = sum(fir[team]) / len(fir[team])
+                for idx in range(len(lineups[team]['game_id'])):
+                    game_id = lineups[team]['game_id'][idx]
+                    data[game_id][lineups[team]['title'][idx]]['prev_FIR'] = sum(fir[team]) / len(fir[team])
             except:
                 continue
 
@@ -211,7 +224,8 @@ def main():
         'away_team_curr_fir_avg',
         'away_team_prev_fir_avg',
         'away_team_curr_slg',
-        'away_team_prev_slg'
+        'away_team_prev_slg',
+        'fir_result'
         ]
     games_data = pd.DataFrame(columns=stat_list)
     dates = games['date'].unique()
@@ -229,25 +243,21 @@ def main():
             prev_2 = 'NA'
         daily_pitchers = []
         daily_teams = []
-        lineups = {}
+        lineups = defaultdict(lambda: defaultdict(list))
         day_games = game_day.get_group(date)
         print(idx, date, prev)
         for num, game in day_games.iterrows():
             lineup = stats.get_game_stats(season['title'], game['id'])
             daily_pitchers.extend([lineup['home_pitcher'], lineup['away_pitcher']])
             daily_teams.extend([lineup['home_team'], lineup['away_team']])
-            lineups[lineup['home_pitcher']] = {}
-            lineups[lineup['away_pitcher']] = {}
-            lineups[lineup['home_team']] = {}
-            lineups[lineup['away_team']] = {}
-            lineups[lineup['home_pitcher']]['title'] = 'home_pitcher'
-            lineups[lineup['home_pitcher']]['game_id'] = game['id']
-            lineups[lineup['away_pitcher']]['title'] = 'away_pitcher'
-            lineups[lineup['away_pitcher']]['game_id'] = game['id']
-            lineups[lineup['home_team']]['title'] = 'home_team'
-            lineups[lineup['home_team']]['game_id'] = game['id']
-            lineups[lineup['away_team']]['title'] = 'away_team'
-            lineups[lineup['away_team']]['game_id'] = game['id']
+            lineups[lineup['home_pitcher']]['title'].append('home_pitcher')
+            lineups[lineup['home_pitcher']]['game_id'].append(game['id'])
+            lineups[lineup['away_pitcher']]['title'].append('away_pitcher')
+            lineups[lineup['away_pitcher']]['game_id'].append(game['id'])
+            lineups[lineup['home_team']]['title'].append('home_team')
+            lineups[lineup['home_team']]['game_id'].append(game['id'])
+            lineups[lineup['away_team']]['title'].append('away_team')
+            lineups[lineup['away_team']]['game_id'].append(game['id'])
 
             data[game['id']] = {}
             data[game['id']]['home_team'] = {}
@@ -311,12 +321,13 @@ def main():
                 'away_team_curr_fir_avg': data[game['id']]['away_team']['FIR'],
                 'away_team_prev_fir_avg': data[game['id']]['away_team']['prev_FIR'],
                 'away_team_curr_slg': data[game['id']]['away_team']['SLG'],
-                'away_team_prev_slg': data[game['id']]['away_team']['prev_SLG']
+                'away_team_prev_slg': data[game['id']]['away_team']['prev_SLG'],
+                'fir_result': game['fir_label']
             }, ignore_index=True)
         # if idx % 5 == 0 and idx != 0:
         #     time.sleep(30)
     # games_data = games_data.iloc[15:]
-    games_data.to_csv(season['title'] + 'Raw.csv', sep=',', index=False)
+    games_data.to_csv(season['title'] + 'LabeledRaw.csv', sep=',', index=False)
 
 if __name__ == "__main__":
     main()
