@@ -56,16 +56,12 @@ class GetStats:
             for player in home_lineup['lineupPositions']:
                 if player['position'] == 'P':
                     # remove all non-character values from string
-                    home_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                    home_pitcher += '-'
-                    home_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                    home_pitcher = str(player['player']['id'])
                     lineup['home_pitcher'] = home_pitcher
             
             for player in away_lineup['lineupPositions']:
                 if player['position'] == 'P':
-                    away_pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                    away_pitcher += '-'
-                    away_pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                    away_pitcher = str(player['player']['id'])
                     lineup['away_pitcher'] = away_pitcher   
         except:
             lineup['home_pitcher'] = 'NA'
@@ -80,9 +76,7 @@ class GetStats:
             for player in sps['playerStatsTotals']:
                 # should add check of player-id here
                 try:
-                    pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                    pitcher += '-'
-                    pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                    pitcher = str(player['player']['id'])
                     
                     for idx in range(len(lineups[pitcher]['game_id'])):
                         game_id = lineups[pitcher]['game_id'][idx]
@@ -97,9 +91,7 @@ class GetStats:
         for player in sps['playerStatsTotals']:
             # should add check of player-id here
             try:
-                pitcher = player['player']['firstName'].replace('.', '').replace(' ', '')
-                pitcher += '-'
-                pitcher += player['player']['lastName'].replace('.', '').replace(' ', '')
+                pitcher = str(player['player']['id'])
 
                 for idx in range(len(lineups[pitcher]['game_id'])):
                     game_id = lineups[pitcher]['game_id'][idx]
@@ -109,7 +101,6 @@ class GetStats:
                 continue
 
     def get_team_stats(self, teams, season, date, lineups, data):
-        print(date, teams)
         team_str = ','.join(teams)
         if date != 'NA':
             team = self.raw.get_team_stats(team_str, season, date)
@@ -245,7 +236,7 @@ def main():
         daily_teams = []
         lineups = defaultdict(lambda: defaultdict(list))
         day_games = game_day.get_group(date)
-        print(idx, date, prev)
+        print(idx, date)
         for num, game in day_games.iterrows():
             lineup = stats.get_game_stats(season['title'], game['id'])
             daily_pitchers.extend([lineup['home_pitcher'], lineup['away_pitcher']])
@@ -324,9 +315,7 @@ def main():
                 'away_team_prev_slg': data[game['id']]['away_team']['prev_SLG'],
                 'fir_result': game['fir_label']
             }, ignore_index=True)
-        # if idx % 5 == 0 and idx != 0:
-        #     time.sleep(30)
-    # games_data = games_data.iloc[15:]
+
     games_data.to_csv(season['title'] + 'LabeledRaw.csv', sep=',', index=False)
 
 if __name__ == "__main__":
