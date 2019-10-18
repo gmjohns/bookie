@@ -44,7 +44,7 @@ def principal_component_analysis(x, n=None):
         nums.append(i)
         columns.append('p_c_'+str(i+1))
     df = pd.DataFrame(data=p_comp, columns=columns)
-    ev = pca.explained_variance_
+    ev = pca.explained_variance_ratio_
     plt.plot(ev, marker='o')
     plt.xticks(nums, labels=list(np.array(nums)+1))
     plt.show()
@@ -64,6 +64,6 @@ if __name__ == '__main__':
     df2 = df.copy()
     df2.update(df_std)
     df2.to_csv('2017-standardized.csv')
-    df_pc = principal_component_analysis(x_norm)
+    df_pc = principal_component_analysis(x_std)
     df_pc['label'] = df['fir_result']
     df_pc.to_csv('2017-pca.csv')
