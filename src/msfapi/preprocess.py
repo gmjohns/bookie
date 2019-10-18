@@ -64,6 +64,6 @@ if __name__ == '__main__':
     df2 = df.copy()
     df2.update(df_std)
     df2.to_csv('2017-standardized.csv')
-    df_pc = principal_component_analysis(x_std)
+    df_pc = principal_component_analysis(x_norm)
     df_pc['label'] = df['fir_result']
-    df_pc.to_csv('2017-pca.csv')
+    df_pc.to_csv('2017-pca-norm.csv')
