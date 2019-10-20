@@ -186,9 +186,9 @@ class GetStats:
 
 def main():
     stats = GetStats(sleep_time=2)
-    season = stats.get_season('20170701')
+    season = stats.get_season('20180701')
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
-    prev_season = stats.get_season('20160701')
+    prev_season = stats.get_season('20170701')
     prev_end_date = timetools.format_date(prev_season['end'])
 
     games = stats.get_game(season)
