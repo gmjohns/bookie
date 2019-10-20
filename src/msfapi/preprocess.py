@@ -82,9 +82,9 @@ if __name__ == '__main__':
     df2_test.update(df_std_test)
     df2.to_csv('2017-standardized.csv')
     df2_test.to_csv('2018-standardized.csv')
-    df_pc = principal_component_analysis(x_norm)
-    df_pc_test = principal_component_analysis(x_norm_test)
+    df_pc = principal_component_analysis(x_std)
+    df_pc_test = principal_component_analysis(x_std_test)
     df_pc['label'] = df['fir_result']
     df_pc_test['label'] = df_test['fir_result']
-    df_pc.to_csv('2017-pca-norm.csv')
-    df_pc_test.to_csv('2018-pca-norm.csv')
+    df_pc.to_csv('2017-pca-std.csv')
+    df_pc_test.to_csv('2018-pca-std.csv')
