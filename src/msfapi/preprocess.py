@@ -41,22 +41,24 @@ def standardize(df, df_test, columns):
     return x_scaled, df, x_scaled_test, df_test
 
 
-def principal_component_analysis(x, n=None):
+def principal_component_analysis(x, x_test, n=None):
     if n == None:
         n = min(x.shape[0], x.shape[1])
     pca = PCA(n_components=n)
     p_comp = pca.fit_transform(x)
+    p_comp_test = pca.transform(x_test)
     columns = []
     nums = []
     for i in range(n):
         nums.append(i)
         columns.append('p_c_'+str(i+1))
     df = pd.DataFrame(data=p_comp, columns=columns)
+    df_test = pd.DataFrame(data=p_comp_test, columns=columns)
     ev = pca.explained_variance_ratio_
     plt.plot(ev, marker='o')
     plt.xticks(nums, labels=list(np.array(nums)+1))
     plt.show()
-    return df
+    return df, df_test
 
 
 if __name__ == '__main__':
@@ -82,8 +84,7 @@ if __name__ == '__main__':
     df2_test.update(df_std_test)
     df2.to_csv('2017-standardized.csv')
     df2_test.to_csv('2018-standardized.csv')
-    df_pc = principal_component_analysis(x_std)
-    df_pc_test = principal_component_analysis(x_std_test)
+    df_pc, df_pc_test = principal_component_analysis(x_std, x_std_test)
     df_pc['label'] = df['fir_result']
     df_pc_test['label'] = df_test['fir_result']
     df_pc.to_csv('2017-pca-std.csv')
