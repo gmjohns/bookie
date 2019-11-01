@@ -71,21 +71,18 @@ if __name__ == '__main__':
     x_norm, df_norm, x_norm_test, df_norm_test = normalize(to_process, to_process_test, to_process.columns.values)
     df_norm_cent = df_norm - df_norm.mean()
     df_norm_cent_test = df_norm_test - df_norm.mean()
-    df1 = df.copy()
-    df1_test = df_test.copy()
-    df1.update(df_norm_cent)
-    df1_test.update(df_norm_cent_test)
-    df1.to_csv('2017-norm-centered.csv')
-    df1_test.to_csv('2018-norm-centered.csv')
+    df_norm_cent['label'] = df['fir_result']
+    df_norm_cent_test['label'] = df_test['fir_result']
+    df_norm_cent.to_csv('2017-norm-centered.csv')
+    df_norm_cent_test.to_csv('2018-norm-centered.csv')
     x_std, df_std, x_std_test, df_std_test = standardize(to_process, to_process_test, to_process.columns.values)
     df2 = df.copy()
-    df2_test = df_test.copy()
-    df2.update(df_std)
-    df2_test.update(df_std_test)
-    df2.to_csv('2017-standardized.csv')
-    df2_test.to_csv('2018-standardized.csv')
-    df_pc, df_pc_test = principal_component_analysis(x_std, x_std_test)
+    df_std['label'] = df['fir_result']
+    df_std_test['label'] = df_test['fir_result']
+    df_std.to_csv('2017-standardized.csv')
+    df_std_test.to_csv('2018-standardized.csv')
+    df_pc, df_pc_test = principal_component_analysis(x_norm, x_norm_test)
     df_pc['label'] = df['fir_result']
     df_pc_test['label'] = df_test['fir_result']
-    df_pc.to_csv('2017-pca-std.csv')
-    df_pc_test.to_csv('2018-pca-std.csv')
+    df_pc.to_csv('2017-pca-norm.csv')
+    df_pc_test.to_csv('2018-pca-norm.csv')
