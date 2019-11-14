@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from dateutil import tz
+import pandas as pd
 
 def convert_utc_to_est(utc_date, format_string):
     from_zone = tz.gettz('UTC')
@@ -12,6 +13,10 @@ def convert_utc_to_est(utc_date, format_string):
 def format_datetime(input_date):
     east = convert_utc_to_est(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     return str(east.date()).replace('-', '')
+
+def format_time(input_date):
+    east = convert_utc_to_est(input_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+    return pd.to_datetime(str(east.time()).replace('-', ''))
 
 def format_date(input_date):
     east = convert_utc_to_est(input_date, '%Y-%m-%dZ')
