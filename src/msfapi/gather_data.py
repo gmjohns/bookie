@@ -330,7 +330,7 @@ def main():
     dates = games['date'].unique()
     game_day = games.groupby(['date'])
     data = {}
-    for idx, date in enumerate(dates[:5]):
+    for idx, date in enumerate(dates[7:8]):
         if timetools.prev_in_range(date, season['start'], season['end']):
             prev = timetools.get_previous_day(date)
             if timetools.prev_in_range(prev, season['start'], season['end']):
