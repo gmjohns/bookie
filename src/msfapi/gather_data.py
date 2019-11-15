@@ -124,7 +124,7 @@ class GetStats:
                 teams.append(self.convert[team.get_text().strip()])
             datetime = box.find_all(class_='col col--min c')[1]
             datetime = pd.to_datetime(datetime.get_text().strip().splitlines()[1])
-            if (teams == [away_team, home_team]) and (datetime == time):
+            if (teams == [away_team, home_team]):
                 away = box.find_all(class_='col col--min')[0]
                 home = box.find_all(class_='col col--min')[1]
                 for player in away.find_all(class_='player'):
@@ -154,6 +154,7 @@ class GetStats:
                         game_id = lineups[pitcher]['game_id'][idx]
                         data[game_id][lineups[pitcher]['title'][idx]]['ERA'] = player['stats']['pitching']['earnedRunAvg']
                         data[game_id][lineups[pitcher]['title'][idx]]['IP'] = player['stats']['pitching']['inningsPitched']
+                        data[game_id][lineups[pitcher]['title'][idx]]['HAND'] = player['player']['handedness']['throws']
                 except:
                     continue
 
@@ -180,7 +181,7 @@ class GetStats:
                 # should add check of player-id here
                 try:
                     fn = str(player['player']['firstName']).replace('.', '')
-                    ln = str(player['player']['firstName']).replace('.', '')
+                    ln = str(player['player']['lastName']).replace('.', '')
                     batter = fn + '-' + ln
                     
                     for idx in range(len(lineups[batter]['game_id'])):
@@ -197,13 +198,12 @@ class GetStats:
             # should add check of player-id here
             try:
                 fn = str(player['player']['firstName']).replace('.', '')
-                ln = str(player['player']['firstName']).replace('.', '')
+                ln = str(player['player']['lastName']).replace('.', '')
                 batter = fn + '-' + ln
                 
                 for idx in range(len(lineups[batter]['game_id'])):
                     game_id = lineups[batter]['game_id'][idx]
-                    data[game_id][lineups[batter]['title'][idx]]['OPS'] = player['stats']['batting']['batterOnBasePlusSluggingPct']
-                    data[game_id][lineups[batter]['title'][idx]]['HAND'] = player['player']['handedness']['bats']
+                    data[game_id][lineups[batter]['title'][idx]]['prev_OPS'] = player['stats']['batting']['batterOnBasePlusSluggingPct']
             except:
                 continue
 
@@ -290,12 +290,66 @@ class GetStats:
                     data[game_id][lineups[team]['title'][idx]]['prev_FIR'] = sum(fir[team]) / len(fir[team])
             except:
                 continue
+    
+    def get_average_bo_stats(self, game):
+        home_key_list = ['home_BO1', 'home_BO2', 'home_BO3', 'home_BO4', 'home_BO5']
+        away_key_list = ['away_BO1', 'away_BO2', 'away_BO3', 'away_BO4', 'away_BO5']
+        home_prev_key_list = ['home_BO1', 'home_BO2', 'home_BO3', 'home_BO4', 'home_BO5']
+        away_prev_key_list = ['away_BO1', 'away_BO2', 'away_BO3', 'away_BO4', 'away_BO5']
+        home_total = 0
+        home_count = 0
+        away_total = 0
+        away_count = 0
+        home_prev_total = 0
+        home_prev_count = 0
+        away_prev_total = 0
+        away_prev_count = 0
+        home_left_hand = 0
+        home_right_hand = 0
+        away_left_hand = 0
+        away_right_hand = 0
+        for key in home_key_list:
+            if game[key]['OPS'] > -1:
+                home_total += game[key]['OPS']
+                home_count += 1
+            if game[key]['HAND'] == 'L':
+                home_left_hand += 1
+            if game[key]['HAND'] == 'R':
+                home_right_hand += 1
+
+        
+        for key in away_key_list:
+            if game[key]['OPS'] > -1:
+                away_total += game[key]['OPS']
+                away_count += 1
+            if game[key]['HAND'] == 'L':
+                away_left_hand += 1
+            if game[key]['HAND'] == 'R':
+                away_right_hand += 1
+
+        
+        for key in home_prev_key_list:
+            if game[key]['OPS'] > -1:
+                home_prev_total += game[key]['prev_OPS']
+                home_prev_count += 1
+        
+        for key in away_prev_key_list:
+            if game[key]['OPS'] > -1:
+                away_prev_total += game[key]['prev_OPS']
+                away_prev_count += 1
+
+        home_ops = home_total / home_count
+        away_ops = away_total / away_count
+        home_prev_ops = home_prev_total / home_prev_count
+        away_prev_ops = home_prev_total / home_prev_count
+
+        return home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand
 
 def main():
-    stats = GetStats(sleep_time=2)
-    season = stats.get_season('20180701')
+    stats = GetStats(sleep_time=1)
+    season = stats.get_season('20170701')
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
-    prev_season = stats.get_season('20170701')
+    prev_season = stats.get_season('20160701')
     prev_end_date = timetools.format_date(prev_season['end'])
 
     games = stats.get_game(season)
@@ -304,7 +358,6 @@ def main():
         'home_team',
         'away_team',
         'home_pitcher_curr_era', 
-        'home_bo1_curr_ops',
         'home_pitcher_prev_era', 
         'home_pitcher_curr_ip', 
         'home_pitcher_prev_ip', 
@@ -312,25 +365,27 @@ def main():
         'away_pitcher_prev_era', 
         'away_pitcher_curr_ip', 
         'away_pitcher_prev_ip', 
+        'home_curr_ops',
+        'home_prev_ops',
+        'away_curr_ops',
+        'away_prev_ops',
+        'home_pitcher_adv',
+        'away_pitcher_adv',
         'home_team_curr_win_pct',
         'home_team_prev_win_pct',
         'home_team_curr_fir_avg',
         'home_team_prev_fir_avg', 
-        'home_team_curr_slg',
-        'home_team_prev_slg',
         'away_team_curr_win_pct',
         'away_team_prev_win_pct',
         'away_team_curr_fir_avg',
         'away_team_prev_fir_avg',
-        'away_team_curr_slg',
-        'away_team_prev_slg',
         'fir_result'
         ]
     games_data = pd.DataFrame(columns=stat_list)
     dates = games['date'].unique()
     game_day = games.groupby(['date'])
     data = {}
-    for idx, date in enumerate(dates[7:8]):
+    for idx, date in enumerate(dates):
         if timetools.prev_in_range(date, season['start'], season['end']):
             prev = timetools.get_previous_day(date)
             if timetools.prev_in_range(prev, season['start'], season['end']):
@@ -414,6 +469,8 @@ def main():
             data[game['id']]['away_pitcher']['prev_ERA'] = -1
             data[game['id']]['away_pitcher']['IP'] = -1
             data[game['id']]['away_pitcher']['prev_IP'] = -1
+            data[game['id']]['home_pitcher']['HAND'] = -1
+            data[game['id']]['away_pitcher']['HAND'] = -1
             data[game['id']]['home_BO1']['OPS'] = -1
             data[game['id']]['home_BO1']['HAND'] = -1
             data[game['id']]['home_BO2']['OPS'] = -1
@@ -482,14 +539,25 @@ def main():
         stats.get_prev_team_fir(daily_teams, prev_season['title'], lineups, data)
 
         for idx, game in day_games.iterrows():
-            #home_ops, away_ops, home_prev_ops, away_prev_ops = get_average_bo_stats(data[game['id']])
-            data[game['id']]['home_BO1']
+            home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand, = stats.get_average_bo_stats(data[game['id']])
+            if (home_right_hand >= 3 and data[game['id']]['home_pitcher']['HAND'] == 'R') or (home_left_hand >= 3 and data[game['id']]['home_pitcher']['HAND'] == 'L'):
+                home_pitcher_adv = 1
+            else:
+                home_pitcher_adv = 0
+            if data[game['id']]['home_pitcher']['HAND'] != 'L' and data[game['id']]['home_pitcher']['HAND'] != 'R':
+                home_pitcher_adv = 1
+            if (away_right_hand >= 3 and data[game['id']]['away_pitcher']['HAND'] == 'R') or (away_left_hand >= 3 and data[game['id']]['away_pitcher']['HAND'] == 'L'):
+                away_pitcher_adv = 1
+            else:
+                away_pitcher_adv = 0
+            if data[game['id']]['away_pitcher']['HAND'] != 'L' and data[game['id']]['away_pitcher']['HAND'] != 'R':
+                away_pitcher_adv = 1
+
             games_data = games_data.append({
                 'date': date,
                 'home_team': data[game['id']]['home_team']['abr'],
                 'away_team': data[game['id']]['away_team']['abr'],
                 'home_pitcher_curr_era': data[game['id']]['home_pitcher']['ERA'], 
-                'home_bo1_curr_ops': data[game['id']]['home_BO1']['OPS'],
                 'home_pitcher_prev_era': data[game['id']]['home_pitcher']['prev_ERA'], 
                 'home_pitcher_curr_ip': data[game['id']]['home_pitcher']['IP'], 
                 'home_pitcher_prev_ip': data[game['id']]['home_pitcher']['prev_IP'],
@@ -497,22 +565,24 @@ def main():
                 'away_pitcher_prev_era': data[game['id']]['away_pitcher']['prev_ERA'],
                 'away_pitcher_curr_ip': data[game['id']]['away_pitcher']['IP'],
                 'away_pitcher_prev_ip': data[game['id']]['away_pitcher']['prev_IP'],
+                'home_curr_ops': home_ops,
+                'home_prev_ops': home_prev_ops,
+                'away_curr_ops': away_ops,
+                'away_prev_ops': away_prev_ops,
+                'home_pitcher_adv': home_pitcher_adv,
+                'away_pitcher_adv': away_pitcher_adv,
                 'home_team_curr_win_pct': data[game['id']]['home_team']['WP'],
                 'home_team_prev_win_pct': data[game['id']]['home_team']['prev_WP'],
                 'home_team_curr_fir_avg': data[game['id']]['home_team']['FIR'],
                 'home_team_prev_fir_avg': data[game['id']]['home_team']['prev_FIR'],
-                'home_team_curr_slg': data[game['id']]['home_team']['SLG'],
-                'home_team_prev_slg': data[game['id']]['home_team']['prev_SLG'],
                 'away_team_curr_win_pct': data[game['id']]['away_team']['WP'],
                 'away_team_prev_win_pct': data[game['id']]['away_team']['prev_WP'],
                 'away_team_curr_fir_avg': data[game['id']]['away_team']['FIR'],
                 'away_team_prev_fir_avg': data[game['id']]['away_team']['prev_FIR'],
-                'away_team_curr_slg': data[game['id']]['away_team']['SLG'],
-                'away_team_prev_slg': data[game['id']]['away_team']['prev_SLG'],
                 'fir_result': game['fir_label']
             }, ignore_index=True)
 
-    games_data.to_csv(season['title'] + 'TestLabeledRaw.csv', sep=',', index=False)
+    games_data.to_csv('data/' + season['title'] + 'LabeledRaw.csv', sep=',', index=False)
 
 if __name__ == "__main__":
     main()
