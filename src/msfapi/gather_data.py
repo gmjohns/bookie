@@ -358,7 +358,7 @@ class GetStats:
         return home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand
 
 def main():
-    stats = GetStats(sleep_time=1)
+    stats = GetStats(sleep_time=2)
     season = stats.get_season('20170701')
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
     prev_season = stats.get_season('20160701')
