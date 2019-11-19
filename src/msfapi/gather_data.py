@@ -338,10 +338,22 @@ class GetStats:
                 away_prev_total += game[key]['prev_OPS']
                 away_prev_count += 1
 
-        home_ops = home_total / home_count
-        away_ops = away_total / away_count
-        home_prev_ops = home_prev_total / home_prev_count
-        away_prev_ops = home_prev_total / home_prev_count
+        if home_count == 0:
+            home_ops = -1
+        else:
+            home_ops = home_total / home_count
+        if away_count == 0:
+            away_ops = -1
+        else:
+            away_ops = away_total / away_count
+        if home_prev_count == 0:
+            home_prev_ops = -1
+        else:
+            home_prev_ops = home_prev_total / home_prev_count
+        if away_prev_count == 0:
+            away_prev_ops = -1
+        else:
+            away_prev_ops = home_prev_total / home_prev_count
 
         return home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand
 
