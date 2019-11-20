@@ -358,7 +358,7 @@ class GetStats:
         return home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand
 
 def main():
-    stats = GetStats(sleep_time=2)
+    stats = GetStats(sleep_time=1)
     season = stats.get_season('20170701')
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
     prev_season = stats.get_season('20160701')
@@ -393,11 +393,10 @@ def main():
         'away_team_prev_fir_avg',
         'fir_result'
         ]
-    games_data = pd.DataFrame(columns=stat_list)
     dates = games['date'].unique()
     game_day = games.groupby(['date'])
     data = {}
-    for idx, date in enumerate(dates):
+    for idx, date in enumerate(dates[139:]):
         if timetools.prev_in_range(date, season['start'], season['end']):
             prev = timetools.get_previous_day(date)
             if timetools.prev_in_range(prev, season['start'], season['end']):
@@ -414,6 +413,7 @@ def main():
         day_games = game_day.get_group(date)
         print(idx, date)
         for num, game in day_games.iterrows():
+            games_data = pd.DataFrame(columns=stat_list)
             lineup = stats.get_game_stats(season['title'], game['id'], game['date'], game['time'])
             daily_pitchers.extend([lineup['home_pitcher'], lineup['away_pitcher']])
             daily_batters.extend([lineup['home_BO1'], 
@@ -593,8 +593,7 @@ def main():
                 'away_team_prev_fir_avg': data[game['id']]['away_team']['prev_FIR'],
                 'fir_result': game['fir_label']
             }, ignore_index=True)
-
-    games_data.to_csv('data/' + season['title'] + 'LabeledRaw.csv', sep=',', index=False)
+        games_data.to_csv('data/' + season['title'] + 'LabeledRaw.csv', mode='a', sep=',', index=False, header=False)
 
 if __name__ == "__main__":
     main()
