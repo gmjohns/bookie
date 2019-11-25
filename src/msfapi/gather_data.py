@@ -353,7 +353,7 @@ class GetStats:
         if away_prev_count == 0:
             away_prev_ops = -1
         else:
-            away_prev_ops = home_prev_total / home_prev_count
+            away_prev_ops = away_prev_total / away_prev_count
 
         return home_ops, away_ops, home_prev_ops, away_prev_ops, home_left_hand, home_right_hand, away_left_hand, away_right_hand
 
