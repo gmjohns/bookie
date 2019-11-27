@@ -14,8 +14,8 @@ def preprocess(raw_file):
     df.loc[df['away_pitcher_prev_ip'] < 0, 'away_pitcher_prev_ip'] = 0
     df.loc[df['away_pitcher_prev_ip'] < 20, 'away_pitcher_prev_era'] = 6.00
     df.loc[df['away_pitcher_curr_ip'] < 20, 'away_pitcher_curr_era'] = df['away_pitcher_prev_era']
-    df.insert(loc=11, column='pitcher_adv', value= df['home_pitcher_adv'] + df['away_pitcher_adv'])
-    df.drop(columns=['home_pitcher_curr_ip', 'away_pitcher_curr_ip', 'home_pitcher_adv', 'away_pitcher_adv'], inplace=True)
+    # df.insert(loc=11, column='pitcher_adv', value= df['home_pitcher_adv'] + df['away_pitcher_adv'])
+    df.drop(columns=['home_pitcher_curr_ip', 'away_pitcher_curr_ip'], inplace=True)
     df.reset_index(drop=True, inplace=True)
     return df
 
@@ -70,10 +70,10 @@ def principal_component_analysis(x, x_test, column_names, n=None):
 
 
 if __name__ == '__main__':
-    df = preprocess('data/2017-regularLabeledRaw.csv')
-    df.to_csv('data/2017-regularPP.csv')
-    df_test = preprocess('data/2018-regularLabeledRaw.csv')
-    df_test.to_csv('data/2018-regularPP.csv')
+    df = preprocess('2017-regularLabeledRaw.csv')
+    df.to_csv('2017-regularPP.csv')
+    df_test = preprocess('2018-regularLabeledRaw.csv')
+    df_test.to_csv('2018-regularPP.csv')
     to_process = df.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
     to_process_test = df_test.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
     x_norm, df_norm, x_norm_test, df_norm_test = normalize(to_process, to_process_test, to_process.columns.values)
@@ -81,16 +81,16 @@ if __name__ == '__main__':
     df_norm_cent_test = df_norm_test - df_norm.mean()
     df_norm_cent['label'] = df['fir_result']
     df_norm_cent_test['label'] = df_test['fir_result']
-    df_norm_cent.to_csv('data/2017-norm-centered.csv')
-    df_norm_cent_test.to_csv('data/2018-norm-centered.csv')
+    df_norm_cent.to_csv('2017-norm-centered.csv')
+    df_norm_cent_test.to_csv('2018-norm-centered.csv')
     x_std, df_std, x_std_test, df_std_test = standardize(to_process, to_process_test, to_process.columns.values)
     df2 = df.copy()
     df_std['label'] = df['fir_result']
     df_std_test['label'] = df_test['fir_result']
-    df_std.to_csv('data/2017-standardized.csv')
-    df_std_test.to_csv('data/2018-standardized.csv')
+    df_std.to_csv('2017-standardized.csv')
+    df_std_test.to_csv('2018-standardized.csv')
     df_pc, df_pc_test = principal_component_analysis(x=x_norm, x_test=x_norm_test, column_names=to_process.columns)
     df_pc['label'] = df['fir_result']
     df_pc_test['label'] = df_test['fir_result']
-    df_pc.to_csv('data/2017-pca-norm.csv')
-    df_pc_test.to_csv('data/2018-pca-norm.csv')
+    df_pc.to_csv('2017-pca-norm.csv')
+    df_pc_test.to_csv('2018-pca-norm.csv')
