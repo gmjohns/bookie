@@ -443,9 +443,9 @@ class GetStats:
 
 def main():
     stats = GetStats(sleep_time=1)
-    season = stats.get_season('20170701')
+    season = stats.get_season('20190701')
     # some further logic could be implemented to save prev season values per team so as to limit the api calls per game
-    prev_season = stats.get_season('20160701')
+    prev_season = stats.get_season('20180701')
     prev_end_date = timetools.format_date(prev_season['end'])
 
     games = stats.get_game(season)
@@ -485,7 +485,7 @@ def main():
     dates = games['date'].unique()
     game_day = games.groupby(['date'])
     data = {}
-    for idx, date in enumerate(dates[174:]):
+    for idx, date in enumerate(dates[1:]):
         if timetools.prev_in_range(date, season['start'], season['end']):
             prev = timetools.get_previous_day(date)
             if timetools.prev_in_range(prev, season['start'], season['end']):
