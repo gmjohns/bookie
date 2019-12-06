@@ -49,7 +49,7 @@ def principal_component_analysis(x, x_test, column_names, n=None):
     p_comp = pca.fit_transform(x)
     p_comp_test = pca.transform(x_test)
     plt.matshow(pca.components_,cmap='viridis')
-    plt.yticks([0,1,2,3,4],['1st Comp','2nd Comp','3rd Comp', '4th Comp', '5th Comp'],fontsize=10)
+    plt.yticks([0,1,2,3,4,5,6],['1st Comp','2nd Comp','3rd Comp', '4th Comp', '5th Comp', '6th Comp', '7th Comp'],fontsize=10)
     plt.colorbar()
     plt.xticks(range(len(column_names)),column_names,rotation=65,ha='left')
     plt.tight_layout()
@@ -70,29 +70,29 @@ def principal_component_analysis(x, x_test, column_names, n=None):
 
 
 if __name__ == '__main__':
-    df = preprocess('data/2017-regularLabeledRawNew.csv')
-    df.to_csv('data/2017-regularPP.csv')
-    df_test = preprocess('data/2018-regularLabeledRawNew.csv')
-    df_test.to_csv('data/2018-regularPP.csv')
-    df_test_1 = preprocess('data/2019-regularLabeledRawNew.csv')
-    df_test_1.to_csv('data/2019-regularPP.csv')
-    # to_process = df.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
-    # to_process_test = df_test.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
-    # x_norm, df_norm, x_norm_test, df_norm_test = normalize(to_process, to_process_test, to_process.columns.values)
-    # df_norm_cent = df_norm - df_norm.mean()
-    # df_norm_cent_test = df_norm_test - df_norm.mean()
-    # df_norm_cent['label'] = df['fir_result']
-    # df_norm_cent_test['label'] = df_test['fir_result']
-    # df_norm_cent.to_csv('2017-norm-centered.csv')
-    # df_norm_cent_test.to_csv('2018-norm-centered.csv')
-    # x_std, df_std, x_std_test, df_std_test = standardize(to_process, to_process_test, to_process.columns.values)
-    # df2 = df.copy()
-    # df_std['label'] = df['fir_result']
-    # df_std_test['label'] = df_test['fir_result']
-    # df_std.to_csv('2017-standardized.csv')
-    # df_std_test.to_csv('2018-standardized.csv')
-    # df_pc, df_pc_test = principal_component_analysis(x=x_norm, x_test=x_norm_test, column_names=to_process.columns)
-    # df_pc['label'] = df['fir_result']
-    # df_pc_test['label'] = df_test['fir_result']
-    # df_pc.to_csv('2017-pca-norm.csv')
-    # df_pc_test.to_csv('2018-pca-norm.csv')
+    df_17 = preprocess('data/2017-regularLabeledRawNew.csv')
+    df_18 = preprocess('data/2018-regularLabeledRawNew.csv')
+    df = df_17.append(df_18, ignore_index=True)
+    df.to_csv('data/17-18-regularPP.csv')
+    df_test = preprocess('data/2019-regularLabeledRawNew.csv')
+    df_test.to_csv('data/2019-regularPP.csv')
+    to_process = df.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
+    to_process_test = df_test.drop(columns = ['date', 'home_team', 'away_team', 'fir_result'])
+    x_norm, df_norm, x_norm_test, df_norm_test = normalize(to_process, to_process_test, to_process.columns.values)
+    df_norm_cent = df_norm - df_norm.mean()
+    df_norm_cent_test = df_norm_test - df_norm.mean()
+    df_norm_cent['label'] = df['fir_result']
+    df_norm_cent_test['label'] = df_test['fir_result']
+    df_norm_cent.to_csv('data/17-18-norm-centered.csv')
+    df_norm_cent_test.to_csv('data/2019-norm-centered.csv')
+    x_std, df_std, x_std_test, df_std_test = standardize(to_process, to_process_test, to_process.columns.values)
+    df2 = df.copy()
+    df_std['label'] = df['fir_result']
+    df_std_test['label'] = df_test['fir_result']
+    df_std.to_csv('data/17-18-standardized.csv')
+    df_std_test.to_csv('data/2019-standardized.csv')
+    df_pc, df_pc_test = principal_component_analysis(x=x_std, x_test=x_std_test, column_names=to_process.columns)
+    df_pc['label'] = df['fir_result']
+    df_pc_test['label'] = df_test['fir_result']
+    df_pc.to_csv('data/17-18-pca-std.csv')
+    df_pc_test.to_csv('data/2019-pca-std.csv')
