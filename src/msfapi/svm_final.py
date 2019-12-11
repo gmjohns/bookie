@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 #Path
-loc = 'C:\\Users\\Will\\Documents\\GradSchool\\CSC522\\Project\\svm\\'
+loc = 'data\\'
 
 # Read data
 df_train = pd.read_csv(loc + '17-18-pca-std.csv')
