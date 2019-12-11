@@ -67,7 +67,9 @@ To run svm.py:
     the program.
 2)  To run: python svm.py
 Notes:
-   - This code performs tuning of pca components on 2017/2018 data with cross-validation using optimal hyperparameters for SVM with sigmoid kernel on standardized data set and outputs to csv file sorted by descending accuracy.
+   - This code performs tuning of pca components on 2017/2018 data with cross-validation using optimal 
+   hyperparameters for SVM with sigmoid kernel on standardized data set and outputs to csv file sorted by
+   descending accuracy.
 
 
 To run svm_final.py:
@@ -75,4 +77,5 @@ To run svm_final.py:
     the program.
 2)  To run: python svm_final.py
 Notes:
-   - This code fits the optimal SVM model with 2017/2018 training data and tests on unseen 2019 test set. The code outputs accuracy on the test set as well as several plots to visualize results.
+   - This code fits the optimal SVM model with 2017/2018 training data and tests on unseen 2019 test set. 
+   The code outputs accuracy on the test set as well as several plots to visualize results.
