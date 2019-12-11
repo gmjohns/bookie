@@ -91,8 +91,8 @@ if __name__ == '__main__':
     df_std_test['label'] = df_test['fir_result']
     df_std.to_csv('data/17-18-standardized.csv')
     df_std_test.to_csv('data/2019-standardized.csv')
-    df_pc, df_pc_test = principal_component_analysis(x=x_std, x_test=x_std_test, column_names=to_process.columns)
+    df_pc, df_pc_test = principal_component_analysis(x=x_norm, x_test=x_norm_test, column_names=to_process.columns)
     df_pc['label'] = df['fir_result']
     df_pc_test['label'] = df_test['fir_result']
-    df_pc.to_csv('data/17-18-pca-std.csv')
-    df_pc_test.to_csv('data/2019-pca-std.csv')
+    df_pc.to_csv('data/17-18-pca-norm.csv')
+    df_pc_test.to_csv('data/2019-pca-norm.csv')
