@@ -1,12 +1,12 @@
 # bookie
-#bTo run KNN-CV.py:
-# 1)  Ensure the libraries identified in the import statements are available to 
-#     the program.
-# 2)  Select KNN-CV.py from the bookie/src/mfsapi directory and run the program.  
-#     The KNN-CV.py file depends on two data files located in the 
-#     bookie/src/mfsapi/data directory ("2017-regularPP.csv" and 
-#     2018-regularPP.csv") and is preconfigured to go there for the data.  
-#     That is all that is required to run the code.
+To run KNN-CV.py:
+1)  Ensure the libraries identified in the import statements are available to 
+    the program.
+2)  Select KNN-CV.py from the bookie/src/mfsapi directory and run the program.  
+    The KNN-CV.py file depends on two data files located in the 
+    bookie/src/mfsapi/data directory ("2017-regularPP.csv" and 
+    2018-regularPP.csv") and is preconfigured to go there for the data.  
+    That is all that is required to run the code.
 Notes:
   a) This program performs KNN for 4 scenarios using cross-validation of 2017 
      and 2018 season data.  The 4 scenarios are: 1) Normalized data, 
