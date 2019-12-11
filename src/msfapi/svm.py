@@ -22,7 +22,7 @@ from sklearn.decomposition import PCA
 
 
 #Path
-loc = 'C:\\Users\\Will\\Documents\\GradSchool\\CSC522\\Project\\svm\\'
+loc = 'data\\'
 
 # New data
 df_2017 = pd.read_csv(loc + '2017-regularPP.csv')
