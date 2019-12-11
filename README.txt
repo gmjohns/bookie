@@ -60,3 +60,19 @@ Notes:
      1) Cross-Validation, and 2) Without Cross-Validaion.
   b) This code produces seperate decision tree outputs for 2 approaches. The 2 approaches are: 1) GINI Index and 
      2) Information Gain
+ 
+ 
+To run svm.py:
+1)  Ensure the packages identified in the import statements are available to 
+    the program.
+2)  To run: python svm.py
+Notes:
+   - This code performs tuning of pca components on 2017/2018 data with cross-validation using optimal hyperparameters for SVM with sigmoid kernel on standardized data set and outputs to csv file sorted by descending accuracy.
+
+
+To run svm_final.py:
+1)  Ensure the packages identified in the import statements are available to 
+    the program.
+2)  To run: python svm_final.py
+Notes:
+   - This code fits the optimal SVM model with 2017/2018 training data and tests on unseen 2019 test set. The code outputs accuracy on the test set as well as several plots to visualize results.
