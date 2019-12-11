@@ -24,7 +24,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
-from generate_training_validation_data  import Randomized_Data as RD
 from sklearn.neighbors import KNeighborsClassifier as knn
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
@@ -317,8 +316,8 @@ if __name__ == '__main__':
     max_num_pca_comps=10  # maximum number of pca components to evaluate
 
     # Read in data
-    data_2017_df = pd.read_csv("2017-regularPP.csv")
-    data_2018_df = pd.read_csv("2018-regularPP.csv")
+    data_2017_df = pd.read_csv("data/2017-regularPP.csv")
+    data_2018_df = pd.read_csv("data/2018-regularPP.csv")
 
     # Combine 2017 and 2018 data
     data_2017_2018_df = pd.concat([data_2017_df, data_2018_df])
