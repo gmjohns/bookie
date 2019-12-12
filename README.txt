@@ -79,3 +79,10 @@ To run svm_final.py:
 Notes:
    - This code fits the optimal SVM model with 2017/2018 training data and tests on unseen 2019 test set. 
    The code outputs accuracy on the test set as well as several plots to visualize results.
+   
+To run nn_keras.py
+1) Ensure all necessary packages are installed.
+2) To run: python nn_keras
+Notes:
+    - hyperparameter tuning has been commented out on the current version. Currently set to trainon 2017/2018 data and test on 2019 with optimal hyperparamters chosen.
+    
